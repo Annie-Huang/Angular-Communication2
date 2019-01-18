@@ -1,0 +1,647 @@
+!!!!!!!!!!!!!!!! Configuration on product-list of product-shell is in !!!!!!!!!!!!!!!!!!!!!
+C:\react\Angular-Communication-master\src\app\products\product.module.ts
+
+https://github.com/DeborahK/Angular-Communication
+Copy C:\react\Angular-Communication-master\APM-Start into C:\react\Angular-Communication-master
+https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement
+http://reactivex.io/documentation/subject.html
+
+3. Communicating with a Template
+############################################################
+Binding:
+---------------
+Interpolation
+	<div>
+	{{pageTitle}}
+	</div>
+Property Binding
+	<img [style.width.px]='imageWidth'>
+Event Binding
+	<button
+	(click)='toggleImage()'>
+	Show Image
+	</button>
+Two-way Binding
+	<inputtype='text'
+	[(ngModel)]='listFilter'/>
+
+Structural Directives
+-----------------------------
+<img *ngIf='showImage'[src]='product.imageUrl'>
+<tr*ngFor='let product of products'>
+
+
+C:\react\Angular-Communication-master>npm install
+C:\react\Angular-Communication-master>npm start
+
+http://localhost:4200/welcome
+
+
+            <table class='table'
+                    *ngIf='products && products.length'>
+is the same as:
+              <table class='table'
+                    *ngIf='products?.length'>
+
+
+Two-way Binding, the Long Way
+<inputtype='text'[(ngModel)]='listFilter'/>
+		=== <inputtype='text' [ngModel]='listFilter'(ngModelChange)='listFilter=$event'/>	
+So we can chagne to <inputtype='text' [ngModel]='listFilter'(ngModelChange)='onFilterChange($event)'/>
+
+
+
+4. ViewChild and ViewChildren
+#######################################################
+Getting a Reference:
+DOM
+letdivElement = document.getElementById('divElementId');
+Decorator
+@ViewChild('divElementVar') divElementRef;
+
+ViewChild:
+Angular Directive
+	@ViewChild(NgModel) filterInput: NgModel;
+		<inputtype='text'[(ngModel)]='listFilter'/>
+Custom Directive / Child Component
+	@ViewChild(StarComponent) star: StarComponent;
+		<pm-star[rating]='product.starRating'></pm-star>
+Template Reference Variable
+	@ViewChild('divElementVar') divElementRef: ElementRef;
+		<div#divElementVar>{{pageTitle}}</div>
+
+Component Construction and Initialization (constructor(), ngOnInit())
+--> View Initialzation (ngAfterViewInit())
+
+https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement
+
+
+ViewChildren
+@ViewChildren('divElementVar')
+divElementRefs: QueryList<ElementRef>;
+
+ViewChildren
+Angular Directive
+	@ViewChildren(NgModel) inputs: QueryList<NgModel>;
+Custom Directive / Child Component
+	@ViewChildren(StarComponent) stars: QueryList<StarComponent>;
+Template Reference Variable
+	@ViewChildren('divElementVar')
+		divElementRefs: QueryList<ElementRef>;
+Template Reference Variables
+	@ViewChildren('filterElement, nameElement')
+		divElementRefs: QueryList<ElementRef>;
+
+
+ViewChild/ViewChildren: Html Element
+@ViewChild('divElementVar') divElementRef: ElementRef;
+Plus:
+o Provides a nativeElementproperty	focus(), blur(), etc
+o Access any Html element properties
+o Call any Html element methods
+Caveats:
+o ViewChildreference not reliably available until AfterViewInit
+o ViewChild reference not available if the element is not in the DOM	<<< ngIf or ngFor
+o Does not work with server-side rendering or web workers
+	can use:
+	if (this.filterElementRef.nativeElement) {
+		this.filterElementRef.nativeElement.focus();
+	}
+o Could cause a security concern, especially with innerHtml
+
+
+ViewChild/ViewChildren: Angular Directive
+@ViewChild(NgModel) filterInput: NgModel;
+Plus:
+o Provides reference to the directive's data structures
+o Access any properties
+Caveats:
+o ViewChildreference not reliably available until AfterViewInit
+o ViewChild reference not available if the element is not in the DOM	<<< ngIf or ngFor
+o NgFormand NgModeldata structures are read-only
+
+Notifying the Component of User Changes
+Two-way binding, the long way
+Getter and setter
+valueChanges observable
+
+Subscribe to the valueChanges Observable
+@ViewChild(NgModel) filterInput: NgModel;
+this.filterInput.valueChanges.subscribe(
+	() =>this.performFilter(this.listFilter)
+);
+Plus:
+o Favor this technique if using other NgModel information
+Caveats:
+o Watch out for ngIf
+o Reference not reliably available until AfterViewInit
+
+
+5. Communicating with a Child Component
+#######################################################
+Parent component template must include the child component is the only way to eastbalish the parent-child relationship.
+C:\react\sales-desktop\src\app\tet\dealer\dealer.component.html
+<div class="ui-g ui-g-nopad">
+    <p-panel id="blotter-panel" header="Post Trade Enrichment Blotter" [toggleable]="false" styleClass="ui-g-12">
+        <app-blotter class="ui-g-12 vertical-layout" (notifyOrderSelection)="confirmSelectBasketOrder($event)"
+                     (notifyError)="handleError($event)" (notifyBlockDocument)="blockDocument($event)"
+                     (notifyUnblockDocument)="unblockDocument($event)"></app-blotter>
+    </p-panel>
+</dvi>
+
+C:\react\Angular-Communication-master>npm install -g @angular/cli
+C:\react\Angular-Communication-master>ng g c shared/criteria --dry-run
+C:\react\Angular-Communication-master>ng g c shared/criteria
+
+Parent to Child:						<<<<<<<<<<<<<<<<<<<<<<
+Parent info to pass to the child: Configuration | Default value | Item data
+How to pass: 
+	@Input
+	Getter/Setter
+		o Favor to only react to changes to specific properties
+	OnChanges
+		o Favor to react to any input property changes
+		o Favor if current and prior values are needed
+Parent access value of child properties or call one of its method: Request information | Perform an Action
+How to do it: 
+	Template Reference Variable
+		o Use from the parent's template
+	@ViewChild
+		o Use from the parent's class		<<< parents will not know change of values in the child component property
+
+Input: Passing Data to the Child
+Parent Template
+	<pm-criteria displayDetail=true>
+	</pm-criteria>
+Child Component
+	@Input() displayDetail: boolean;
+Or:
+Parent Component
+	includeDetail: boolean = true;
+Parent Template
+	<pm-criteria [displayDetail]='includeDetail'>
+	</pm-criteria>
+Child Component
+	@Input() displayDetail: boolean;
+
+
+Watching for Changes to an Input Property
+Getter and Setter
+	private _hitCount: number;
+	gethitCount(): number {
+		returnthis._hitCount;
+	}
+	@Input()
+	sethitCount(value: number) {
+		this._hitCount = value;
+	}
+OnChanges Lifecycle Hook
+	@Input() hitCount: number;
+	ngOnChanges(changes: SimpleChanges) {
+	}
+
+Template Reference Variable: Referencing a Child Component
+	<pm-criteria #filterCriteria
+		[displayDetail]='includeDetail'>
+	</pm-criteria>
+	{{ filterCriteria.listFilter }}
+	{{ filterCriteria.clear() }}
+Child Component
+	@Input() displayDetail: boolean;
+	listFilter: string;
+	clear(): void {
+	}
+
+
+ViewChild: Referencing a Child Component
+Parent Template
+	<pm-criteria
+		[displayDetail]='includeDetail'>
+	</pm-criteria>
+Parent Component
+	exportclassProductListComponent implementsOnInit, AfterViewInit
+	@ViewChild(CriteriaComponent)
+	filterComponent: CriteriaComponent;
+	ngAfterViewInit(): void {
+		this.filterComponent.clear();
+	}
+Child Component
+	@Input() displayDetail: boolean;
+	listFilter: string;
+	clear(): void { ...}
+
+(when to) Defining Child Components
+Specific Task - e.g. a input elememnt that provide auto complete
+Complex - e.g. that we want to build and test it as a seperate component, e.g. calendar or menu component.
+Reusable - it will be reuse in one component or multiple components. e.g. fliter.
+
+(when not to) define child components:
+- If the child component tightly integrated with the parent component.
+- Easiler to mantain the component as one unit.
+
+
+6. Communicating with a Parent Component
+#######################################################
+Child to Parent
+Event notification
+	@Output
+		o Notify parent of action
+		o Pass data to parent
+Provide information
+	Template Reference Variable
+	@ViewChild
+
+Output: Notifying the Parent
+Child Component
+	@Output() valueChange: EventEmitter<string>;
+	this.valueChange.emit(value);
+Parent Template
+	<pm-criteria
+		[displayDetail]='includeDetail'
+		(valueChange)='onValueChange($event)'>
+	</pm-criteria>
+Parent Component
+	onValueChange(value: string): void {
+		this.performFilter(value);
+	}
+this.valueChange.emit(value);
+
+
+7. Communicating Through a Service
+#######################################################
+What Is State?
+View State
+User Information
+Entity Data
+User Selection and Input
+
+Managing State
+Property Bag
+	@Injectable()
+	export classParamService {
+		showImage: boolean;
+		filterBy: string;
+	}
+ 	o Retain view settings 
+		<<< component to use to communicate with itself such as view setting. e.g. set showImage to true in product list, navigate to product detail page, and then come back product list page again and want to konw if showImage was set to true before.
+	o Pass data between components 
+		<<< search criteria pass from search page to product list page.
+Basic State Management
+	@Injectable()
+	export classProductService {
+		private products: IProduct[];
+
+		getProducts() {}
+		getProduct(id: number) {}
+		createProduct(product: IProduct) {}
+		...
+	}
+	o Retrieve, manage, store state  
+		<<<< for backend server connection. store state so you don't need to call to get product list everytime.
+	o Share state between components 
+		<<<< select one product from product list component and want to pass that detail to product detail component to display the detail.
+State Management with Notifications
+	@Injectable()
+	export classProductService {
+		private selectedProduct: IProduct;
+
+		private selectedProductSource =	new BehaviorSubject<IProduct>(null);		<<< what is this? BehaviorSubject
+		selectedProductChanges$ = this.selectedProductSource.asObservable();
+		...
+	}
+ngrx/Redux
+	State: Immutable
+	Actions: State Changes
+	Reducers: State + Action = New State
+	Store: Observable of state | Observer of actions
+
+Services
+Provide functionality across components
+Examples:
+	•Logging
+	•Calculations
+	•Data access
+	•Data sharing
+	•…
+Register it with the Angular injector
+Inject into any component that needs it
+Singletons
+
+C:\react\Angular-Communication-master>ng g s products/product-parameter -m products/product.module --dry-run
+C:\react\Angular-Communication-master>ng g s products/product-parameter -m products/product.module
+
+Registering in a Component
+@Component({
+	templateUrl: './product-list.component.html',
+	styleUrls: ['./product-list.component.css'],
+	providers: [ ProductService]
+})
+exportclassProductListComponent {
+	pageTitle: string = 'Product List';
+	includeDetail: boolean = true;
+	...
+}
+-- Available to that component and ALL OF its children (Service Scope)
+-- Also means when that component is destroy, the service will be gone (Service Lifetime)
+-- Advantage is that you can have many instance for the service. e.g. you want to dispaly the product list (mutilple)two times, one with star product and one with non-star products.
+   By injesting the service in component level, you can have two seperate Property Bags, one for star-products and one for non-star-products.
+
+
+
+Registering in a Module (or root App component):
+@NgModule({
+	...,
+	declarations: [
+		ProductListComponent,
+		ProductDetailComponent,
+		ProductEditComponent
+	],
+	providers: [
+		ProductService,
+		ProductEditGuard,
+		ProductParameterService
+	]
+	})
+exportclassProductModule { }
+-- Able to be access by every component of the application
+-- And for life time of the application.
+-- But if the module is lazy loading.
+	It's only available to that component within that module.
+	And until that module is loaded, it will not be avaible. But after it's loaded, it will be available for the life time of the app.
+
+Property Bag: Communication with Itself
+Great for:
+o Retaining view state
+o Retaining user selections
+Note:
+o Any component can read the values
+o Any component
+
+Property Bag: Communication with Others
+Great for:
+o Sharing data or other state
+o Communicating state changes
+Note:
+o Any component can read the values
+o Any component can change the values
+o Components are only notified of state changes if they use template binding
+
+
+8. Communicating Through a State Management Service
+#######################################################
+State Management Service
+Add a property to retain the list
+On get: return the list
+On get by Id:return an item from the list
+On create: add the item to the list
+On delete: remove the item from the list
+Optionally add code to expire the list
+
+
+    getProducts(): Observable<IProduct[]> {
+        if (this.products) {
+            return of(this.products);
+        }
+        return this.http.get<IProduct[]>(this.productsUrl)
+                        .pipe(
+                            tap(data => console.log(JSON.stringify(data))),
+                            tap(data => this.products = data),		<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                            catchError(this.handleError)
+                        );
+    }
+the pipe allow it to chain the action we want to do with the observable.
+the tap was the 'do' method before, it allow tap into the data without changing the observable.
+we can have multiple tap
+catchError was like 'catch' method before.
+
+    private createProduct(product: IProduct, headers: HttpHeaders): Observable<IProduct> {
+        product.id = null;
+        return this.http.post<IProduct>(this.productsUrl, product,  { headers: headers} )
+                        .pipe(
+                            tap(data => console.log('createProduct: ' + JSON.stringify(data))),
+                            tap(data => this.products.push(data)),	<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                            catchError(this.handleError)
+                        );
+    }
+let's us assume after the post and response is the data retrieve from the server (e.g. server can add extra properties like create_datetime). We push the data returned from the sever into the list.
+
+
+State Management Service
+Benefits:
+o Encapsulates retrieve and store operations
+o Retains and shares state values
+o Minimizes hits to the backend server
+o Improves performance
+o Provides change notifications for bound values using a getter
+Considerations:
+o Stale data
+o No explicit change notifications
+o State is not immutable
+	getProducts(): Observable<IProduct[]> {
+		if(this.products) {
+			return of(this.products);	<<< anyone can change this.products. OK if it is in a small team. If it's big team or complex logic, need to consider making it immutable.
+		}
+		...
+	}
+
+Getter
+Benefits:
+o Keeps bound data in sync
+	o Define a property in a service	<<<     currentProduct: IProduct | null;
+	o Bind that property in a template	<<<     Product Detail: {{product.productName}}
+	o Use a getter in the component class   <<<     get product(): IProduct | null {return this.productService.currentProduct;}
+o Simple
+o Easy to understand
+Considerations:
+o Only works with bound data
+	getproduct(): IProduct| null {
+		returnthis.productService.currentProduct;
+	}
+
+
+8. Communicating Through Service Notifications
+#######################################################
+Notifications (Push)
+List Template
+	<buttontype='button'
+		*ngFor='let product of products'
+		(click)='onSelected(product)'>
+List Component
+	onSelected(product: IProduct) {
+		this.productService.changeSelectedProduct(product);
+	}
+Service
+	changeSelectedProduct(selectedProduct: IProduct) {
+		// Broadcast the notification
+	}
+Component or Service
+	// Listen for and respond to the notification
+
+
+Event Emitter
+Seems to work only for child to parent relationship.	<<< not recommand...
+
+Service Notifications
+Subject | BehaviorSubject
+Subject is a special type of observable that can multi-cast a value or event to multiple subscribers.
+Both Component (Subscriber) and Service (Subscriber) will receive notification.
+Subject is also an observer. An observer allows us to push new data into observable sequence, using its next method:	<<< !!!!!!!
+	this.mySubject.next(item);
+
+
+Squence:
+List Template
+	<buttontype='button'
+		*ngFor='let product of products'
+		(click)='onSelected(product)'>
+List Component
+	onSelected(product: IProduct) {
+		this.productService.changeSelectedProduct(product);
+	}
+Service
+	private selectedProductSource=new Subject<IProduct>();		<<< Make it private so not one can modify the Subject outside the class.
+	selectedProductChanges$ =					<<< only expose its read only observable. The $ convention indicates it's an observable, not a simple property.
+		this.selectedProductSource.asObservable();
+	changeSelectedProduct(selectedProduct: IProduct) {		<<< Can call this method to push new value into the subject.
+		this.selectedProductSource.next(selectedProduct);
+	}
+Detail Component
+	this.productService.selectedProductChanges$.subscribe(
+		selectedProduct => this.product = selectedProduct
+	)
+
+
+Subject vs. BehaviorSubject
+Subject
+o Requires no initial value
+o Broadcasts items as they are pushed
+BehaviorSubject
+o Requires an initial value
+o Provides the current value and then broadcasts items as they are pushed
+
+A Subject doesn't hold a value.
+A BehaviorSubject holds one value. When it is subscribed it emits the value immediately.
+AsyncSubject - 
+	An AsyncSubject emits the last value (and only the last value) emitted by the source Observable, and only after that source Observable completes. (If the source Observable does not emit any values, the AsyncSubject also completes without emitting any values.)
+BehaviorSubject - 
+	When an observer subscribes to a BehaviorSubject, it begins by emitting the item most recently emitted by the source Observable (or a seed/default value if none has yet been emitted) and then continues to emit any other items emitted later by the source Observable(s).
+PublishSubject - 
+	PublishSubject emits to an observer only those items that are emitted by the source Observable(s) subsequent to the time of the subscription.
+ReplaySubject - 
+	ReplaySubject emits to any observer all of the items that were emitted by the source Observable(s), regardless of when the observer subscribes.
+Consider ReplaySubject if you want the subject to hold more than one value
+
+http://reactivex.io/documentation/subject.html
+
+
+Does the Service Need a Subject?
+Yes:
+o Notifications are required
+o Those notification are more than just changes to bound properties
+No:
+o Notifications are not required
+o The only notifications are for changes to bound properties
+
+
+9. Communicating Using the Router
+#######################################################
+http://localhost:4200/products/5
+
+Required Parameters
+Configure
+	{ path: 'products/:id', component: ProductDetailComponent }
+Activate
+	<a [routerLink]="['/products', product.id]">...</a>
+	this.router.navigate(['/products',this.product.id]);
+Resulting Url
+	http://localhost:4200/products/5
+Read
+	this.route.snapshot.paramMap.get('id');
+
+Optional Parameters
+Configure
+	{ path: 'products', component: ProductListComponent }
+Activate
+	<a [routerLink]="['/products',{name: cart,code: g}]">...</a>
+	this.router.navigate(['/products',{name: 'cart',code:'g'}]);
+Resulting Url
+	http://localhost:4200/products;name=cart;code=g
+Read
+	this.route.snapshot.paramMap.get('name');
+
+Query Parameters
+Configure
+	{ path: 'products', component: ProductListComponent }
+Activate
+	<a [routerLink]="['/products']"
+	   [queryParams]= "{name: cart, code: g}">...</a>
+	this.router.navigate(['/products'],
+			{queryParams: {name: 'cart', code:'g'}});
+Resulting Url
+	http://localhost:4200/products?name=cart&code=g
+Read
+	this.route.snapshot.queryParamMap.get('name');
+
+Route Parameters
+Benefits:
+o Simple
+o Straightforward
+o Resulting Urls are bookmarkable and sharable
+Considerations:
+o Parameters appear in the Url
+o Not good for large amounts of data
+
+Use Route to pass small amount of data to the routed components.
+Use Service to share objects to share data between components that are not routed.
+
+Which Kind to Use?
+Required parameters:
+o When the data must be provided to the routed component
+Optional parameters:
+o When the data is optionally provided to the routed component
+Query parameters:
+o When the data is optionally provided to the routed component
+o When a query style URL is desired
+o When the data should be retained across routes
+
+10. Final Words
+#######################################################
+
+Component to Template
+Communication:
+• Binding
+• Structural Directives
+• ViewChild/ViewChildrenwith template reference variable and nativeElement
+• ViewChild/ViewChildrenwith NgForm or NgModel
+Change Notification:
+• Two-way binding, the long way
+• Getters and setters
+• ViewChild and valueChanges observable
+
+Component to Child Component
+Parent to Child:
+• Input properties (@Input)
+• Template reference variable
+• ViewChild decorator
+Change Notification:
+• Getters and setters
+• onChangeslifecycle hook
+Child to Parent:
+• Output properties (@Output)
+
+Component to Component
+Service:
+• Simple properties
+• Getters and setters
+• State management
+• Subject
+• BehaviorSubject
+• ngrx/Redux
+Router:
+• Required parameters
+• Optional parameters
+• Query parameters
+
+
+
+
